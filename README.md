@@ -72,7 +72,7 @@ You can also use `ConversableAgent` to directly access the underlying LLM as a L
 from conversable_agent import ConversableAgent
 
 # Get the LLM model directly
-llm_model = ConversableAgent(model_name="groq-mixtral", return_model=True).return_llm
+llm_model = ConversableAgent(model_name="groq-mixtral", return_model=True).return_llm()
 
 # Use the LLM model directly
 your_query = "Whats the capital city of New Mexico?"
