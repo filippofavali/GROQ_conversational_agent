@@ -10,13 +10,14 @@ class ConversableAgent:
     def __init__(self, model_name:str="groq-mixtral",
                  temperature:float=0.0,
                  system_role:str="You are a helpful conversational counterpart",
-                 return_model:bool=False,
+                 memory_length:int=5,
                  ):
 
-        self.model_name = model_name
+        self.model_name = model_name.lower()
         self.temperature = temperature
         self.system_role = system_role
-        self.chat_history = []  # To store the conversation history
+        self.chat_history = []                                          # To store the conversation history
+        self.max_memory = memory_length                                 # FIFO handling of memory buffer
 
         # Load environment variables from .env file
         load_dotenv()
@@ -33,14 +34,26 @@ class ConversableAgent:
 
         self.llm = self.load_llm()
 
-        if return_model:
-            self.return_llm = self.llm
+    def return_llm(self):
+        return self.llm
 
     def load_llm(self):
         if "mixtral" in self.model_name:
             from langchain_groq import ChatGroq
             return ChatGroq(
                 model="mixtral-8x7b-32768",
+                temperature=self.temperature,
+            )
+        elif "llama" in self.model_name:
+            from langchain_groq import ChatGroq
+            return ChatGroq(
+                model="llama-3.3-70b-specdec",
+                temperature=self.temperature,
+            )
+        elif "deepseek" in self.model_name:
+            from langchain_groq import ChatGroq
+            return ChatGroq(
+                model="deepseek-r1-distill-llama-70b",
                 temperature=self.temperature,
             )
         elif self.model_name == "openai" in self.model_name:
@@ -74,7 +87,8 @@ class ConversableAgent:
 
         response = chain.invoke({"input": query, "chat_history": self.chat_history})
         self.chat_history.append({"user": query, "assistant": response})
-        print(response)
+        if len(self.chat_history) > self.max_memory:
+            self.chat_history.pop(0)                                # FIFO memory buffer strategy
         return response
 
 
@@ -95,7 +109,7 @@ if __name__ == "__main__":
         if user_query.lower() == "exit":
             print("Goodbye!")
             break
-        conversational_agent(user_query)
+        print(conversational_agent(user_query))
 
     # Usage 2
     """
@@ -104,12 +118,11 @@ if __name__ == "__main__":
     with other means like function calling, tagging, extraction, and more complex chains. 
     """
     print("=== USAGE EXAMPLE #2 ===")
-    llm_model = ConversableAgent(model_name="groq-mixtral",
-                                 return_model=True).return_llm
+    llm_model = ConversableAgent(model_name="groq-deepseek").return_llm()
 
-    # this is going to be a usable LLM returned as a LangChain Runnable, you can use it in more complex and dedicated ways
-
-    response = llm_model.invoke("Whats the capital city of New Mexico?")
+    # Use the LLM model directly
+    your_query = "Whats the capital city of New Mexico?"
+    response = llm_model.invoke(your_query)
     print(response.content)
 
 

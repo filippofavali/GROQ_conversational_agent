@@ -25,7 +25,7 @@ cd <repository_name>
 The project uses a `venv_droplet.yml` file for dependency management. Ensure you have `conda` installed, then create and activate the virtual environment:
 
 ```bash
-conda env create -f venv_droplet.yml
+conda env create --name <env_name> -f venv_droplet.yml
 conda activate <env_name>
 ```
 
@@ -62,7 +62,7 @@ while True:
     if user_query.lower() == "exit":
         print("Goodbye!")
         break
-    conversational_agent(user_query)
+    print(conversational_agent(user_query))
 ```
 
 ### Example 2: Direct LLM Access
@@ -75,7 +75,8 @@ from conversable_agent import ConversableAgent
 llm_model = ConversableAgent(model_name="groq-mixtral", return_model=True).return_llm
 
 # Use the LLM model directly
-response = llm_model.invoke("What's the capital city of New Mexico?")
+your_query = "Whats the capital city of New Mexico?"
+response = llm_model.invoke(your_query)
 print(response.content)
 ```
 
